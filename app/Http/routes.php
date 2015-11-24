@@ -35,4 +35,3 @@ Route::post('payment_credited',['middleware' => 'jwt.auth','as' => 'testroute', 
 Route::get('show_balance','UserAccountsController@show_balance');
 Route::resource('products','ProductsController');
 Route::resource('orders','OrdersController');
-test

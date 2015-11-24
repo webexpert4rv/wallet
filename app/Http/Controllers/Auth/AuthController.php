@@ -7,7 +7,10 @@ use Validator;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 class AuthController extends Controller
 {
     /*
@@ -23,11 +26,16 @@ class AuthController extends Controller
 
     use AuthenticatesAndRegistersUsers, ThrottlesLogins;
 
+    protected $loginPath = 'invalid-login-detected';
+
+    protected $redirectPath = 'home';
+
     /**
      * Create a new authentication controller instance.
      *
      * @return void
      */
+
     public function __construct()
     {
         $this->middleware('guest', ['except' => 'getLogout']);
@@ -61,5 +69,24 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
         ]);
+    }
+
+    public function postRegister(Request $request)
+    {
+
+        $validator = $this->validator($request->all());
+
+        if ($validator->fails()) {
+
+            return json_encode(['message' => 'failure', 'data' => $validator->errors()->all()]);
+        }
+
+        $user = $this->create($request->all());
+
+        $token = JWTAuth::fromUser($user);
+
+        $data = ['message' => 'success', 'data' => [ 'token' =>  $token] ];
+
+        return $data;
     }
 }
